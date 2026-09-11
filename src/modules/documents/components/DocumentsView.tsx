@@ -16,6 +16,7 @@ import {
 } from '@/modules/storage/repositories/documents.repository';
 import { SelectDropdown } from '@/components/ui';
 import { DocumentPreviewModal } from './DocumentPreviewModal';
+import { AdBanner } from '@/components/ads/AdBanner';
 
 interface DocumentsViewProps {
   applications: Application[];
@@ -115,6 +116,14 @@ export const DocumentsView: React.FC<DocumentsViewProps> = ({
 
       {/* Documents Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+        {/* First Card: Sponsored Ad */}
+        <div className='p-5 rounded-sm bg-[#090912]/80 border border-white/8 flex flex-col justify-between shadow-none min-h-[200px]'>
+          <AdBanner
+            adFormat='rectangle'
+            className='h-full flex flex-col justify-between border-none bg-transparent p-0'
+          />
+        </div>
+
         {documents.map((doc) => {
           const app = appMap.get(doc.applicationId);
 

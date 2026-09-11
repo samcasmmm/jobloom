@@ -22,6 +22,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html lang='en' className={`${geistSans.className} ${geistMono.variable} h-full antialiased`}>
       <head>
+        <meta name='google-adsense-account' content='ca-pub-1947157505829323' />
         <script
           async
           src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1947157505829323'

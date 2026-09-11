@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { Application, InterviewRound } from '@/modules/storage/types/schema';
 import { STATUS_CONFIG, STATUS_ORDER } from '@/lib/status-colors';
+import { AdBanner } from '@/components/ads/AdBanner';
 
 interface DashboardViewProps {
   applications: Application[];
@@ -208,34 +209,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Source Breakdown (Span 1) */}
-        <div className='p-6 rounded-sm bg-[#090912]/80 border border-white/8 shadow-none flex flex-col justify-between'>
-          <div>
-            <h3 className='text-sm font-bold text-white'>Application Channels</h3>
-            <p className='text-xs text-zinc-400 mb-4'>Volume by referral and discovery source</p>
-
-            <div className='space-y-3'>
-              {Object.entries(sourceMap).map(([src, count]) => (
-                <div key={src} className='p-3 rounded-sm bg-white/3 border border-white/5 flex items-center justify-between'>
-                  <span className='text-xs font-mono font-medium text-zinc-200'>{src}</span>
-                  <div className='flex items-center gap-2'>
-                    <span className='text-xs font-bold text-white font-mono'>{count}</span>
-                    <span className='text-[10px] text-zinc-500 font-mono'>
-                      ({total > 0 ? ((count / total) * 100).toFixed(0) : 0}%)
-                    </span>
-                  </div>
-                </div>
-              ))}
-
-              {Object.keys(sourceMap).length === 0 && (
-                <p className='text-xs text-zinc-500 italic text-center py-6'>No source data available.</p>
-              )}
-            </div>
-          </div>
-
-          <div className='pt-4 border-t border-white/5 text-[11px] text-zinc-500'>
-            Top performing: <span className='text-indigo-300 font-bold'>Referrals & Wellfound</span>
-          </div>
+        {/* Sponsored Ad Banner (Span 1) */}
+        <div className='lg:col-span-1 flex flex-col'>
+          <AdBanner adFormat='rectangle' className='h-full flex flex-col justify-between min-h-[280px]' />
         </div>
       </div>
 
@@ -332,6 +308,61 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </p>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Row 4: Application Channels (Full Width) */}
+      <div className='p-6 rounded-sm bg-[#090912]/80 border border-white/8 shadow-none'>
+        <div className='flex flex-wrap items-center justify-between gap-3 mb-5'>
+          <div className='flex items-center gap-2'>
+            <PieChart className='w-4 h-4 text-indigo-400' />
+            <div>
+              <h3 className='text-sm font-bold text-white'>Application Channels</h3>
+              <p className='text-xs text-zinc-400'>Volume by referral and discovery source</p>
+            </div>
+          </div>
+          {Object.keys(sourceMap).length > 0 && (
+            <div className='text-xs font-mono px-2.5 py-1 rounded-sm bg-indigo-500/10 border border-indigo-500/20 text-indigo-300'>
+              Top Channel:{' '}
+              <span className='font-bold text-white'>
+                {Object.entries(sourceMap).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'}
+              </span>{' '}
+              ({Object.entries(sourceMap).sort((a, b) => b[1] - a[1])[0]?.[1] || 0} applications)
+            </div>
+          )}
+        </div>
+
+        <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3'>
+          {Object.entries(sourceMap).map(([src, count]) => {
+            const pct = total > 0 ? ((count / total) * 100).toFixed(0) : '0';
+            return (
+              <div
+                key={src}
+                className='p-3.5 rounded-sm bg-white/3 border border-white/8 hover:border-indigo-500/30 transition-all flex flex-col justify-between space-y-2.5'
+              >
+                <div className='flex items-center justify-between'>
+                  <span className='text-xs font-mono font-medium text-zinc-300 truncate'>{src}</span>
+                  <span className='text-[10px] text-zinc-500 font-mono'>{pct}%</span>
+                </div>
+                <div className='flex items-baseline justify-between'>
+                  <span className='text-xl font-bold text-white font-mono'>{count}</span>
+                  <span className='text-[10px] text-zinc-500'>apps</span>
+                </div>
+                <div className='w-full h-1.5 rounded-xs bg-white/5 overflow-hidden'>
+                  <div
+                    className='h-full bg-indigo-500/70 rounded-xs transition-all duration-300'
+                    style={{ width: `${Math.max(Number(pct), 4)}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+
+          {Object.keys(sourceMap).length === 0 && (
+            <div className='col-span-full py-6 text-center text-xs text-zinc-500 italic'>
+              No source channel data recorded yet.
+            </div>
+          )}
         </div>
       </div>
     </div>

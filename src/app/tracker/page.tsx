@@ -44,6 +44,7 @@ import { DocumentsView } from '@/modules/documents/components/DocumentsView';
 import { ContactsView } from '@/modules/contacts/components/ContactsView';
 import { RemindersView } from '@/modules/reminders/components/RemindersView';
 import { SettingsView } from '@/modules/settings/components/SettingsView';
+import { AdBanner } from '@/components/ads/AdBanner';
 
 type TabType = 'applications' | 'dashboard' | 'interviews' | 'documents' | 'contacts' | 'reminders' | 'settings';
 
@@ -279,6 +280,8 @@ export default function TrackerPage() {
           {/* TAB 1: APPLICATIONS PIPELINE (KANBAN & TABLE) */}
           {activeTab === 'applications' && (
             <div className='space-y-4'>
+              {/* Sponsored Google Ad Banner (Only in Applications Tab) */}
+
               {/* Search & Filter Toolbar */}
               <div className='flex flex-wrap items-center justify-between gap-3 p-3 rounded-sm bg-[#090912]/80 border border-white/8'>
                 {/* Search input */}
@@ -303,7 +306,11 @@ export default function TrackerPage() {
                       ...STATUS_ORDER.map((st) => ({
                         value: st,
                         label: STATUS_CONFIG[st]?.label || st,
-                        icon: <span className={`w-2 h-2 rounded-full shrink-0 ${STATUS_CONFIG[st]?.dot || 'bg-zinc-400'}`} />,
+                        icon: (
+                          <span
+                            className={`w-2 h-2 rounded-full shrink-0 ${STATUS_CONFIG[st]?.dot || 'bg-zinc-400'}`}
+                          />
+                        ),
                       })),
                     ]}
                     size='sm'
@@ -340,9 +347,7 @@ export default function TrackerPage() {
                       type='button'
                       onClick={() => setViewMode('table')}
                       className={`h-full px-2 rounded-xs flex items-center justify-center transition-colors duration-100 cursor-pointer ${
-                        viewMode === 'table'
-                          ? 'bg-indigo-600 text-white shadow-none'
-                          : 'text-zinc-400 hover:text-white'
+                        viewMode === 'table' ? 'bg-indigo-600 text-white shadow-none' : 'text-zinc-400 hover:text-white'
                       }`}
                       title='Spreadsheet Matrix View'
                     >
@@ -351,6 +356,7 @@ export default function TrackerPage() {
                   </div>
                 </div>
               </div>
+              <AdBanner />
 
               {/* View Render */}
               {viewMode === 'kanban' ? (
