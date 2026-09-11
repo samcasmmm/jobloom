@@ -18,28 +18,32 @@ export const RemindersView: React.FC<RemindersViewProps> = ({
   onUpdateStatus,
   thresholdDays = 7,
 }) => {
-  const now = Date.now();
-
   // Heuristic 1: Inactive applications (> thresholdDays) in Applied / OA stage
-  const staleApplications = applications
-    .filter((a) => a.status === 'Applied' || a.status === 'OA')
-    .map((app) => {
-      const lastActive = new Date(app.lastUpdated || app.appliedDate).getTime();
-      const daysSince = Math.floor((now - lastActive) / (1000 * 60 * 60 * 24));
-      return { app, daysSince };
-    })
-    .filter((item) => item.daysSince >= thresholdDays)
-    .sort((a, b) => b.daysSince - a.daysSince);
+  const staleApplications = React.useMemo(() => {
+    const now = Date.now();
+    return applications
+      .filter((a) => a.status === 'Applied' || a.status === 'OA')
+      .map((app) => {
+        const lastActive = new Date(app.lastUpdated || app.appliedDate).getTime();
+        const daysSince = Math.floor((now - lastActive) / (1000 * 60 * 60 * 24));
+        return { app, daysSince };
+      })
+      .filter((item) => item.daysSince >= thresholdDays)
+      .sort((a, b) => b.daysSince - a.daysSince);
+  }, [applications, thresholdDays]);
 
   // Heuristic 2: Explicit Follow-Up dates
-  const explicitFollowUps = applications
-    .filter((a) => Boolean(a.followUpDate))
-    .map((app) => {
-      const targetTime = new Date(app.followUpDate!).getTime();
-      const diffDays = Math.ceil((targetTime - now) / (1000 * 60 * 60 * 24));
-      return { app, diffDays, followUpDate: app.followUpDate! };
-    })
-    .sort((a, b) => a.diffDays - b.diffDays);
+  const explicitFollowUps = React.useMemo(() => {
+    const now = Date.now();
+    return applications
+      .filter((a) => Boolean(a.followUpDate))
+      .map((app) => {
+        const targetTime = new Date(app.followUpDate!).getTime();
+        const diffDays = Math.ceil((targetTime - now) / (1000 * 60 * 60 * 24));
+        return { app, diffDays, followUpDate: app.followUpDate! };
+      })
+      .sort((a, b) => a.diffDays - b.diffDays);
+  }, [applications]);
 
   return (
     <div className='w-full space-y-6 text-left'>

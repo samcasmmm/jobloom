@@ -72,9 +72,10 @@ export const ApplicationKanban: React.FC<ApplicationKanbanProps> = ({
     };
   }, []);
 
+  const todayTimestamp = React.useMemo(() => Date.now(), []);
   const getDaysSinceUpdate = (isoDate?: string) => {
     if (!isoDate) return 0;
-    const diff = Date.now() - new Date(isoDate).getTime();
+    const diff = todayTimestamp - new Date(isoDate).getTime();
     return Math.floor(diff / (1000 * 60 * 60 * 24));
   };
 

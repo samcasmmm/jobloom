@@ -72,15 +72,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     .slice(0, 4);
 
   // Stale applications needing follow-up (>7 days)
-  const staleApps = applications
-    .filter((a) => a.status === 'Applied' || a.status === 'OA')
-    .filter((a) => {
-      const days = Math.floor(
-        (Date.now() - new Date(a.lastUpdated || a.appliedDate).getTime()) / (1000 * 60 * 60 * 24)
-      );
-      return days >= 7;
-    })
-    .slice(0, 4);
+  const staleApps = React.useMemo(() => {
+    const now = Date.now();
+    return applications
+      .filter((a) => a.status === 'Applied' || a.status === 'OA')
+      .map((app) => {
+        const lastActive = new Date(app.lastUpdated || app.appliedDate).getTime();
+        const days = Math.floor((now - lastActive) / (1000 * 60 * 60 * 24));
+        return { app, days };
+      })
+      .filter((item) => item.days >= 7)
+      .slice(0, 4);
+  }, [applications]);
 
   return (
     <div className='w-full space-y-6 text-left'>
@@ -281,26 +284,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
 
           <div className='space-y-3'>
-            {staleApps.map((app) => {
-              const days = Math.floor(
-                (Date.now() - new Date(app.lastUpdated || app.appliedDate).getTime()) / (1000 * 60 * 60 * 24)
-              );
-              return (
-                <div
-                  key={app.id}
-                  onClick={() => app && onSelectApplication(app)}
-                  className='p-3.5 rounded-sm bg-white/3 border border-white/8 hover:border-amber-500/40 transition-all cursor-pointer flex items-center justify-between'
-                >
-                  <div>
-                    <span className='text-xs font-bold text-white'>{app.company}</span>
-                    <span className='block text-[11px] text-zinc-400'>{app.role}</span>
-                  </div>
-                  <span className='text-[10px] font-mono px-2 py-0.5 rounded-sm bg-amber-500/15 text-amber-300 border border-amber-500/30'>
-                    {days} days inactive
-                  </span>
+            {staleApps.map(({ app, days }) => (
+              <div
+                key={app.id}
+                onClick={() => onSelectApplication(app)}
+                className='p-3.5 rounded-sm bg-white/3 border border-white/8 hover:border-amber-500/40 transition-all cursor-pointer flex items-center justify-between'
+              >
+                <div>
+                  <span className='text-xs font-bold text-white'>{app.company}</span>
+                  <span className='block text-[11px] text-zinc-400'>{app.role}</span>
                 </div>
-              );
-            })}
+                <span className='text-[10px] font-mono px-2 py-0.5 rounded-sm bg-amber-500/15 text-amber-300 border border-amber-500/30'>
+                  {days} days inactive
+                </span>
+              </div>
+            ))}
 
             {staleApps.length === 0 && (
               <p className='text-xs text-zinc-500 italic py-6 text-center'>
