@@ -9,7 +9,7 @@ export interface TechIconProps {
   variant?: 'light' | 'dark' | 'grayscale';
 }
 
-export const TechIcon: React.FC<TechIconProps> = ({ name, className = 'w-4 h-4', variant = 'dark' }) => {
+export const TechIcon: React.FC<TechIconProps> = ({ name, className = 'w-4 h-4', variant = 'light' }) => {
   return (
     <span className={`inline-flex items-center justify-center shrink-0 ${className}`}>
       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}

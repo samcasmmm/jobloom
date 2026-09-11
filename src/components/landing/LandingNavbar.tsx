@@ -74,7 +74,7 @@ export const LandingNavbar: React.FC = () => {
               rel='noopener noreferrer'
               className='hidden sm:inline-flex items-center justify-center gap-2 h-9 px-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-zinc-200 hover:text-white transition-all cursor-pointer shadow-sm'
             >
-              <TechIcon name='github' className='w-4 h-4' />
+              <TechIcon name='github' variant='dark' className='w-4 h-4' />
               <span>GitHub</span>
             </a>
 

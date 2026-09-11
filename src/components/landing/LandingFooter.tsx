@@ -2,14 +2,35 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 
+const PAGES_LINKS = [
+  { label: 'Live Demo', href: '/#demo' },
+  { label: 'Features', href: '/#features' },
+  { label: 'Privacy & Terms and Conditions', href: '/privacy' },
+  { label: 'FAQ', href: '/#faq' },
+];
+
+const SOCIALS_LINKS = [
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/company/digitat-in' },
+  { label: 'Twitter / X', href: 'https://x.com/digitat_in' },
+  { label: 'Instagram', href: 'https://instagram.com/digitat.in' },
+  { label: 'Threads', href: 'https://www.threads.com/@digitat.in' },
+];
+
+const LEGAL_LINKS = [
+  { label: 'Privacy Policy', href: '/privacy' },
+  { label: 'Zero Telemetry Promise', href: '/privacy#telemetry' },
+  { label: 'Terms of Service', href: '/privacy#terms' },
+  { label: 'Cookie Policy (None)', href: '/privacy#cookies' },
+];
+
 export const LandingFooter: React.FC = () => {
   return (
     <footer className='relative z-10 border-t border-white/10 bg-[#050509] text-zinc-400 overflow-hidden pt-16 sm:pt-20 pb-12 sm:pb-16'>
       {/* Top Content Grid */}
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='grid grid-cols-2 md:grid-cols-6 lg:grid-cols-12 gap-10 lg:gap-8 pb-16'>
-          {/* Brand & Copyright Column (Span 4) */}
-          <div className='col-span-2 md:col-span-6 lg:col-span-4 flex flex-col justify-between'>
+          {/* Brand & Copyright Column (Span 6) */}
+          <div className='col-span-2 md:col-span-6 lg:col-span-6 flex flex-col justify-between'>
             <div>
               {/* Brand Header */}
               <Link href='/' className='inline-flex items-center gap-2 group'>
@@ -59,31 +80,13 @@ export const LandingFooter: React.FC = () => {
           <div className='col-span-1 md:col-span-2 lg:col-span-2 space-y-4'>
             <h4 className='text-xs font-bold uppercase tracking-wider text-white'>Pages</h4>
             <ul className='space-y-2.5 text-xs text-zinc-400'>
-              <li>
-                <a href='#demo' className='hover:text-white transition-colors'>
-                  Live Workspace
-                </a>
-              </li>
-              <li>
-                <a href='#architecture' className='hover:text-white transition-colors'>
-                  Architecture
-                </a>
-              </li>
-              <li>
-                <a href='#features' className='hover:text-white transition-colors'>
-                  Features
-                </a>
-              </li>
-              <li>
-                <a href='#privacy' className='hover:text-white transition-colors'>
-                  Privacy Model
-                </a>
-              </li>
-              <li>
-                <a href='#faq' className='hover:text-white transition-colors'>
-                  FAQ
-                </a>
-              </li>
+              {PAGES_LINKS.map((link) => (
+                <li key={link.label}>
+                  <a href={link.href} className='hover:text-white transition-colors'>
+                    {link.label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -91,50 +94,19 @@ export const LandingFooter: React.FC = () => {
           <div className='col-span-1 md:col-span-2 lg:col-span-2 space-y-4'>
             <h4 className='text-xs font-bold uppercase tracking-wider text-white'>Socials</h4>
             <ul className='space-y-2.5 text-xs text-zinc-400'>
-              <li>
-                <a
-                  href='https://github.com'
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='hover:text-white transition-colors inline-flex items-center gap-1.5 group'
-                >
-                  <span>GitHub</span>
-                  <ArrowUpRight className='w-3 h-3 text-zinc-600 group-hover:text-zinc-300 transition-colors' />
-                </a>
-              </li>
-              <li>
-                <a
-                  href='https://digitat.in'
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='hover:text-white transition-colors inline-flex items-center gap-1.5 group'
-                >
-                  <span>Digitat Studio</span>
-                  <ArrowUpRight className='w-3 h-3 text-zinc-600 group-hover:text-zinc-300 transition-colors' />
-                </a>
-              </li>
-              <li>
-                <a
-                  href='https://twitter.com'
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='hover:text-white transition-colors inline-flex items-center gap-1.5 group'
-                >
-                  <span>Twitter / X</span>
-                  <ArrowUpRight className='w-3 h-3 text-zinc-600 group-hover:text-zinc-300 transition-colors' />
-                </a>
-              </li>
-              <li>
-                <a
-                  href='https://linkedin.com'
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='hover:text-white transition-colors inline-flex items-center gap-1.5 group'
-                >
-                  <span>LinkedIn</span>
-                  <ArrowUpRight className='w-3 h-3 text-zinc-600 group-hover:text-zinc-300 transition-colors' />
-                </a>
-              </li>
+              {SOCIALS_LINKS.map((link) => (
+                <li key={link.label}>
+                  <a
+                    href={link.href}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='hover:text-white transition-colors inline-flex items-center gap-1.5 group'
+                  >
+                    <span>{link.label}</span>
+                    <ArrowUpRight className='w-3 h-3 text-zinc-600 group-hover:text-zinc-300 transition-colors' />
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -142,53 +114,13 @@ export const LandingFooter: React.FC = () => {
           <div className='col-span-1 md:col-span-2 lg:col-span-2 space-y-4'>
             <h4 className='text-xs font-bold uppercase tracking-wider text-white'>Legal</h4>
             <ul className='space-y-2.5 text-xs text-zinc-400'>
-              <li>
-                <a href='#privacy' className='hover:text-white transition-colors'>
-                  Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a href='#privacy' className='hover:text-white transition-colors'>
-                  Zero Telemetry Promise
-                </a>
-              </li>
-              <li>
-                <a href='#faq' className='hover:text-white transition-colors'>
-                  Terms of Service
-                </a>
-              </li>
-              <li>
-                <a href='#faq' className='hover:text-white transition-colors'>
-                  Cookie Policy (None)
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* App Access / Tracker (Span 2) */}
-          <div className='col-span-1 md:col-span-2 lg:col-span-2 space-y-4'>
-            <h4 className='text-xs font-bold uppercase tracking-wider text-white'>Tracker</h4>
-            <ul className='space-y-2.5 text-xs text-zinc-400'>
-              <li>
-                <a href='#demo' className='hover:text-white transition-colors font-medium text-indigo-400'>
-                  Open Tracker Board
-                </a>
-              </li>
-              <li>
-                <a href='#demo' className='hover:text-white transition-colors'>
-                  Kanban View
-                </a>
-              </li>
-              <li>
-                <a href='#demo' className='hover:text-white transition-colors'>
-                  Spreadsheet Matrix
-                </a>
-              </li>
-              <li>
-                <a href='#demo' className='hover:text-white transition-colors'>
-                  JSON Data Vault
-                </a>
-              </li>
+              {LEGAL_LINKS.map((link) => (
+                <li key={link.label}>
+                  <a href={link.href} className='hover:text-white transition-colors'>
+                    {link.label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
