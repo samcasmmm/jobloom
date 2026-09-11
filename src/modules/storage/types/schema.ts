@@ -6,7 +6,7 @@ export interface Application {
   location?: string;
   salaryMin?: number;
   salaryMax?: number;
-  source: 'LinkedIn' | 'Referral' | 'Naukri' | 'Wellfound' | 'Company Site' | 'Other';
+  source: 'LinkedIn' | 'Referral' | 'Naukri' | 'Wellfound' | 'Company Site' | 'Other' | (string & {});
   status: 'Wishlist' | 'Applied' | 'OA' | 'Interview' | 'Offer' | 'Rejected' | 'Ghosted';
   appliedDate: string; // ISO
   lastUpdated: string; // ISO

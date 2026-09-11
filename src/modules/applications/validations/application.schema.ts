@@ -1,13 +1,6 @@
 import { z } from 'zod';
 
-export const ApplicationSourceSchema = z.enum([
-  'LinkedIn',
-  'Referral',
-  'Naukri',
-  'Wellfound',
-  'Company Site',
-  'Other',
-]);
+export const ApplicationSourceSchema = z.string().min(1, 'Source is required');
 
 export const ApplicationStatusSchema = z.enum([
   'Wishlist',

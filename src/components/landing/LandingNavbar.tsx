@@ -78,8 +78,8 @@ export const LandingNavbar: React.FC = () => {
               <span>GitHub</span>
             </a>
 
-            <a
-              href='#demo'
+            <Link
+              href='/tracker'
               className='relative group/btn inline-flex items-center justify-center h-9 px-4 rounded-xl overflow-hidden text-xs font-semibold text-white bg-indigo-600 shadow-md shadow-indigo-600/30 ring-1 ring-white/20 transition-all duration-300 ease-out hover:scale-[1.03] hover:shadow-lg hover:shadow-indigo-500/40 active:scale-95 cursor-pointer'
             >
               {/* Fluid smooth gradient shift layer */}
@@ -93,7 +93,7 @@ export const LandingNavbar: React.FC = () => {
                 <span>Open Tracker</span>
                 <ArrowRight className='w-3.5 h-3.5 transition-transform duration-300 ease-out group-hover/btn:translate-x-1' />
               </span>
-            </a>
+            </Link>
 
             {/* Mobile Menu Toggle */}
             <button

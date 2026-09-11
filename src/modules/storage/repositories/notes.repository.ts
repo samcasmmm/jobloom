@@ -1,6 +1,11 @@
 import { getDB } from '../services/db';
 import type { NoteEntry } from '../types/schema';
 
+export async function getAllNotes(): Promise<NoteEntry[]> {
+  const db = await getDB();
+  return db.getAll('notes');
+}
+
 export async function getNotesByApplicationId(applicationId: string): Promise<NoteEntry[]> {
   const db = await getDB();
   return db.getAllFromIndex('notes', 'by-applicationId', applicationId);

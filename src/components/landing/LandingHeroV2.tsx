@@ -63,19 +63,19 @@ export const LandingHeroV2: React.FC = () => {
         {/* Action Buttons */}
         <div className='mt-10 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto'>
           <a
-            href='#demo'
+            href='/tracker'
             className='w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 font-bold text-sm text-white shadow-xl shadow-indigo-600/35 ring-1 ring-white/20 transition-all duration-200 hover:scale-[1.02] hover:shadow-indigo-500/50 active:scale-95 group cursor-pointer'
           >
-            <span>Explore Live Workspace</span>
+            <span>Launch Tracker Workspace</span>
             <ArrowRight className='w-4 h-4 group-hover:translate-x-1 transition-transform' />
           </a>
 
           <a
-            href='#architecture'
+            href='#demo'
             className='w-full sm:w-auto px-7 py-4 rounded-2xl bg-white/4 hover:bg-white/8 border border-white/10 hover:border-white/20 text-zinc-200 hover:text-white font-semibold flex items-center justify-center gap-2 transition-all backdrop-blur-md cursor-pointer'
           >
             <Code2 className='w-4 h-4 text-indigo-400' />
-            <span>System Architecture</span>
+            <span>Interactive Demo</span>
           </a>
         </div>
 
