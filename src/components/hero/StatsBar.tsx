@@ -18,13 +18,13 @@ const defaultStats: StatItem[] = [
 
 export const StatsBar: React.FC<StatsBarProps> = ({ stats = defaultStats }) => {
   return (
-    <div className="w-full max-w-5xl mt-12 pt-8 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-6">
+    <div className='w-full max-w-5xl mt-12 pt-8 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-6'>
       {stats.map((stat, i) => (
-        <div key={i} className="flex flex-col items-center">
-          <span className="text-2xl sm:text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-300">
+        <div key={i} className='flex flex-col items-center'>
+          <span className='text-2xl sm:text-3xl font-extrabold bg-clip-text text-transparent bg-linear-to-r from-white to-zinc-300'>
             {stat.value}
           </span>
-          <span className="text-xs sm:text-sm text-zinc-400 mt-0.5">{stat.label}</span>
+          <span className='text-xs sm:text-sm text-zinc-400 mt-0.5'>{stat.label}</span>
         </div>
       ))}
     </div>

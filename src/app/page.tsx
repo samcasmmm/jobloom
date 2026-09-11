@@ -1,16 +1,35 @@
-import { Hero } from "@/components";
-import { constructMetadata } from "@/lib/seo";
+import {
+  LandingNavbar,
+  LandingHeroV2,
+  ArchitectureDeepDive,
+  FeatureBento,
+  PrivacyComparison,
+  FAQSection,
+  LandingFooter,
+} from '@/components';
+import { constructMetadata } from '@/lib/seo';
 
 export const metadata = constructMetadata({
-  title: "Next-Gen AI Career Discovery & Local-First Application Tracker",
+  title: 'Jobloom — The Local-First Job Application & Interview Tracker',
   description:
-    "Track job applications, interview stages, and follow-ups with local IndexedDB storage, neural skill matching, and full JSON portability.",
+    'A privacy-first, local-first web app to track job applications, multi-round technical interviews, resume versions, and follow-ups. Stored directly in your browser with IndexedDB and JSON backups.',
 });
 
 export default function Home() {
   return (
-    <div className="min-h-screen w-full bg-[#0a0a0f]">
-      <Hero />
+    <div className='relative min-h-screen w-full bg-[#07070b] text-white selection:bg-indigo-500 selection:text-white'>
+      {/* Page Content Shell */}
+      <div className='relative z-10 flex flex-col min-h-screen'>
+        <LandingNavbar />
+        <main className='flex-1'>
+          <LandingHeroV2 />
+          <ArchitectureDeepDive />
+          <FeatureBento />
+          <PrivacyComparison />
+          <FAQSection />
+        </main>
+        <LandingFooter />
+      </div>
     </div>
   );
 }
