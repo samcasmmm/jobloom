@@ -12,110 +12,247 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - **App Name**: Jobloom
 - **Production URL**: https://jobloom.digitat.in
+- **One-liner**: A local-first web app to track job applications, interview rounds, and follow-ups — no backend, all data lives on-device.
 
 ## Overview
-A local-first web app to track job applications, interview rounds, and follow-ups. Built with Next.js (client-only), Tailwind CSS v4, and IndexedDB — no backend, single-user, all data stored securely on-device with full JSON export/import for backup and cross-device portability.
+
+Jobloom is a single-user, client-only job application tracker. Every write goes straight to IndexedDB — there is no server, no auth, and no sync. Users own their data completely and can export/import it as JSON for backup or moving between devices/browsers.
+
+## Non-Goals (explicit constraints — do not build these)
+
+- No backend API, no server-side database, no auth/login.
+- No multi-user support, no real-time sync between devices.
+- No push notifications — "reminders" are computed on read (e.g. `followUpDate < today`), never scheduled.
+- No analytics/telemetry calls out to third parties.
+- Data portability (JSON export/import) is the _only_ backup mechanism — treat it as a first-class feature, not an afterthought.
 
 ## Tech Stack & Architecture
-- **Framework**: Next.js (App Router, React 19, TypeScript, client-first architecture)
+
+- **Framework**: Next.js (App Router, React 19, TypeScript, client-first — most routes are `"use client"`; only static/marketing pages may be server components)
 - **Styling**: Tailwind CSS v4, Lucide Icons, Shadcn UI / Base UI
-- **Storage**: IndexedDB via `idb` wrapper (Local persistence)
+- **Storage**: IndexedDB via `idb` wrapper — single DB (`job-tracker-db`), versioned schema, no server round-trips
+- **State management**: Local component state + React Context for cross-module state (e.g. active filters, theme); no external state library needed at this scale
+- **Forms & validation**: Native controlled inputs + lightweight schema validation (zod) at the service layer before any IndexedDB write
 - **Data Portability**: Full JSON export & import functionality for backups and cross-device transfers
 - **Visuals**: WebGL shader gradients (`GradientWaves`) and glassmorphic modern UI
 
----
+## Design System Conventions
+
+- Glassmorphic surfaces: translucent panels (`bg-white/5` to `/10`, `backdrop-blur`), subtle borders (`border-white/10`)
+- `GradientWaves` as the persistent animated background layer behind the app shell — keep it performant (canvas/WebGL, not re-rendered per state change)
+- Status colors are consistent and centrally defined (one source of truth in `lib/status-colors.ts`), reused across Kanban columns, table badges, and dashboard charts
+- Dark mode is the default; light mode and system are supported via the theme toggle in Settings
+
+## Data Model (IndexedDB schema)
+
+```typescript
+// modules/storage/types/schema.ts
+
+export interface Application {
+  id: string;
+  company: string;
+  role: string;
+  jobLink?: string;
+  location?: string;
+  salaryMin?: number;
+  salaryMax?: number;
+  source: 'LinkedIn' | 'Referral' | 'Naukri' | 'Wellfound' | 'Company Site' | 'Other';
+  status: 'Wishlist' | 'Applied' | 'OA' | 'Interview' | 'Offer' | 'Rejected' | 'Ghosted';
+  appliedDate: string; // ISO
+  lastUpdated: string; // ISO
+  followUpDate?: string; // ISO
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InterviewRound {
+  id: string;
+  applicationId: string; // FK
+  type: 'HR' | 'Tech' | 'Managerial' | 'System Design' | 'Culture Fit' | 'Assignment' | 'Other';
+  mode: 'Online' | 'Offline' | 'Phone';
+  scheduledAt: string; // ISO
+  interviewerName?: string;
+  interviewerRole?: string;
+  meetingLink?: string;
+  outcome: 'Pending' | 'Pass' | 'Fail';
+  notes?: string;
+  createdAt: string;
+}
+
+export interface DocumentFile {
+  id: string;
+  applicationId: string; // FK
+  type: 'Resume' | 'CoverLetter' | 'Other';
+  label: string; // e.g. "Resume_v2"
+  blob: Blob;
+  fileName: string;
+  mimeType: string;
+  uploadedAt: string;
+}
+
+export interface Contact {
+  id: string;
+  name: string;
+  role?: string;
+  company?: string;
+  linkedinUrl?: string;
+  email?: string;
+  phone?: string;
+  notes?: string;
+  applicationIds: string[]; // many-to-many
+  createdAt: string;
+}
+
+export interface NoteEntry {
+  id: string;
+  applicationId: string; // FK
+  type: 'auto' | 'manual'; // auto = system-generated activity log
+  content: string;
+  createdAt: string;
+}
+
+export interface Settings {
+  id: 'app-settings'; // singleton key
+  theme: 'light' | 'dark' | 'system';
+  statusLabels: Record<Application['status'], string>;
+  statusColors?: Record<Application['status'], string>;
+  followUpThresholdDays: number; // used by "needs follow-up" computed filter
+  lastBackupAt?: string;
+}
+```
+
+**Stores & indexes** (`modules/storage/services/db.ts`, `idb` typed schema):
+
+- `applications` — indexes: `by-status`, `by-company`, `by-appliedDate`
+- `interviews` — index: `by-applicationId`
+- `documents` — index: `by-applicationId`
+- `contacts` — no index (scans `applicationIds`; fine at personal-tracker scale)
+- `notes` — index: `by-applicationId`
+- `settings` — singleton row, keyPath `id`
+
+Bump `DB_VERSION` and add an `upgrade()` migration branch for any schema change — never mutate existing stores in place without a migration path, since users' only copy of their data is in their own browser.
 
 ## Module-wise Feature List
 
 ### 1. Applications (Core Module)
-- **CRUD**: Add / Edit / Delete application entries.
-- **Fields**: Company, role, job link, location, salary range, source (LinkedIn / Referral / Naukri / Wellfound / etc.), applied date, status.
-- **Status Pipeline**: `Wishlist` → `Applied` → `OA` → `Interview` → `Offer` → `Rejected` → `Ghosted`.
-- **Views**:
-  - **Kanban Board View**: Drag-and-drop status changes across columns.
-  - **Table View**: Compact list view with quick status updating directly from table rows.
-- **Batch Actions**: Bulk delete and bulk status update.
-- **Search & Filter**: Filter by company, status, source, date range, location, and role keywords.
-- **Sorting**: Sort by applied date, last updated date, company name, salary.
+
+- CRUD: Add / Edit / Delete application entries.
+- Fields: company, role, job link, location, salary range, source, applied date, status.
+- Status Pipeline: `Wishlist` → `Applied` → `OA` → `Interview` → `Offer` → `Rejected` → `Ghosted`.
+- Views: Kanban board (drag-and-drop status change) and Table (inline status update).
+- Batch actions: bulk delete, bulk status update.
+- Search & filter: company, status, source, date range, location, role keywords.
+- Sorting: applied date, last updated, company name, salary.
 
 ### 2. Interviews
-- **Interview Rounds**: Add multiple interview rounds per application (type: HR / Technical / Managerial / System Design / Culture Fit / Assignment).
-- **Details**: Scheduled date/time, interviewer names/roles, meeting link/mode.
-- **Preparation & Freeform Notes**: Rich notes per round.
-- **Reminders**: Upcoming interview visual badges / indicator tags (computed locally, no push required).
-- **Outcomes**: Track round outcomes (`Pass` / `Fail` / `Pending`).
+
+- Multiple rounds per application (HR / Technical / Managerial / System Design / Culture Fit / Assignment).
+- Scheduled date/time, interviewer name/role, meeting link/mode.
+- Rich freeform prep notes per round.
+- Upcoming-interview badges (computed locally, no scheduling infra).
+- Round outcome: Pass / Fail / Pending.
 
 ### 3. Documents
-- **Resumes & Cover Letters**: Attach resume version used per application (stored as Blobs in IndexedDB).
-- **Version Tagging**: `Resume_v1`, `Resume_v2`, role-tailored versions.
-- **Preview & Download**: Instant in-browser preview and file download directly from application entry.
+
+- Attach resume/cover letter per application, stored as Blobs in IndexedDB.
+- Version tagging (`Resume_v1`, role-tailored versions).
+- In-browser preview and download from the application entry.
 
 ### 4. Contacts
-- **Network & Referrals**: Add recruiter, hiring manager, or referral contacts per application.
-- **Fields**: Name, role, company, LinkedIn URL, email, phone, notes.
-- **Application Linking**: Link contacts to one or more job applications.
+
+- Recruiter/hiring-manager/referral contacts.
+- Fields: name, role, company, LinkedIn, email, phone, notes.
+- Link one contact to multiple applications.
 
 ### 5. Notes & Timeline
-- **Automated Activity Log**: Auto-records status changes, interview additions, document attachments, and timestamps.
-- **Manual Notes**: Add freeform timestamped comments and interview reflections.
-- **Timeline View**: Interactive vertical stepper UI showing the complete journey of each application.
+
+- Auto-logged activity (status changes, interview added, document attached).
+- Manual timestamped notes.
+- Vertical stepper timeline per application.
 
 ### 6. Dashboard & Analytics
-- **Summary Metrics**: Total applications, active in-flight pipelines, offers received, rejection rate, ghosting rate.
-- **Funnel Chart**: Visual conversion funnel (`Applied` → `OA` → `Interview` → `Offer`).
-- **Activity & Velocity**: Applications submitted per week / month charts.
-- **Source Effectiveness**: Analysis of which application sources yield the highest interview and offer conversion rates.
+
+- Summary cards: total, active, offers, rejection rate, ghosting rate.
+- Funnel chart: Applied → OA → Interview → Offer.
+- Applications-per-week/month velocity chart.
+- Source-effectiveness breakdown (conversion by channel).
 
 ### 7. Follow-Up Reminders
-- **Follow-up Date**: Set target follow-up date per application.
-- **"Needs Follow-Up" Computed Filter**: Flags applications with no response/activity in *X* days.
-- **Action Widget**: Dashboard widget highlighting upcoming interview rounds and pending recruiter follow-ups.
+
+- Per-application follow-up date.
+- Computed "needs follow-up" filter (no activity in _X_ days, configurable in Settings).
+- Dashboard widget: upcoming interviews + pending follow-ups.
 
 ### 8. Settings & Data Portability
-- **JSON Export**: Export entire IndexedDB database to a structured JSON file.
-- **JSON Import**: Restore data from backup JSON with validation.
-- **Wipe Data**: Clean-slate reset / purge option.
-- **Theme Preferences**: Dark mode / Light mode / System default toggle.
-- **Custom Status Stages**: Rename pipeline stages or customize status colors.
 
-### 9. Storage & Infrastructure (Client-Only DB)
-- **IndexedDB Wrapper**: Custom wrapper using `idb` library.
-- **Stores / Schema**: `applications`, `interviews`, `documents`, `contacts`, `notes_timeline`, `settings`.
-- **Migrations**: Schema version management and migration handlers.
-- **Auto-Backup Prompt**: Non-intrusive periodic backup reminders to ensure zero data loss on browser cache purges.
+- JSON export of the full IndexedDB dataset.
+- JSON import with validation before write.
+- Wipe-all-data (clean slate).
+- Theme toggle: light / dark / system.
+- Rename pipeline stages, customize status colors, set follow-up threshold.
 
----
+### 9. Storage & Infrastructure (client-only DB)
 
-## Codebase Organization Blueprint
-Recommended modular architecture under `src/modules/`:
+- `idb`-based wrapper, typed schema, versioned migrations.
+- Repository layer per store (CRUD functions), no direct IndexedDB calls from components.
+- Periodic non-intrusive backup-reminder prompt (browser storage can be cleared by the user/OS at any time — this is the only real data-loss risk).
+
+## Codebase Organization
+
 ```
 src/
 ├── modules/
-│   ├── storage/             # IndexedDB db setup, schemas, migrations, repository base
-│   ├── applications/        # CRUD, Kanban board, Table view, filters, search
-│   ├── interviews/          # Round management, scheduling, round notes
-│   ├── documents/           # IndexedDB blob storage, versioning, preview/download
-│   ├── contacts/            # Recruiters & referral network linked to applications
-│   ├── timeline/            # Activity logging & chronological vertical stepper
-│   ├── dashboard/           # Metrics cards, conversion funnels, velocity charts
-│   ├── reminders/           # Computed follow-ups & upcoming interview widgets
-│   └── settings/            # Export/Import JSON, custom pipeline configuration
+│   ├── storage/             # idb setup, schema, migrations, repositories
+│   ├── applications/        # CRUD, Kanban, Table, filters, search
+│   │   └── {components,repositories,services,types,validations,utils}
+│   ├── interviews/
+│   ├── documents/
+│   ├── contacts/
+│   ├── timeline/
+│   ├── dashboard/
+│   ├── reminders/
+│   └── settings/
 ├── components/
-│   ├── background/          # WebGL shader gradients (GradientWaves)
-│   ├── layout/              # Navbar, Sidebar, AppShell, Footer
-│   ├── ui/                  # Shadcn / Base UI design system components
+│   ├── background/           # GradientWaves (WebGL)
+│   ├── layout/                # Navbar, Sidebar, AppShell, Footer
+│   ├── ui/                    # Shadcn / Base UI primitives
 │   └── index.ts
-└── lib/                     # Utilities, formatting, date helpers
+└── lib/                       # date/formatting utils, status-colors, zod schemas
 ```
 
-## Recommended Implementation Order
-1. **Storage Infra (`modules/storage`)**: `idb` initialization, schema types, stores, repository helpers.
-2. **Applications Module (`modules/applications`)**: Table view, Kanban drag-and-drop, creation modal, filtering.
-3. **Dashboard (`modules/dashboard`)**: Summary cards, pipeline funnel, conversion analytics.
-4. **Interviews Module (`modules/interviews`)**: Multi-round tracker, round types, status badges.
-5. **Notes & Timeline (`modules/timeline`)**: Automated activity logging, manual notes, vertical timeline.
-6. **Contacts & Documents (`modules/contacts`, `modules/documents`)**: Recruiter contacts & Blob resume storage.
-7. **Reminders (`modules/reminders`)**: Follow-up heuristics & upcoming interview alerts.
-8. **Settings & Portability (`modules/settings`)**: JSON import/export, data backup prompts, stage customization.
+Each module follows `{components,repositories,services,types,validations,utils}` — no DI/service-locator layer; components call services directly, services call repositories directly. Keep this flat; don't add abstraction the app doesn't need.
 
+## Coding Conventions
 
+- Functional patterns throughout — no class-based services/repositories.
+- All IndexedDB access goes through the `storage` module's repositories; no module reaches into `idb` directly.
+- Validate at the service boundary (zod) before any write — repositories assume already-valid data.
+- Derived/computed values (funnel stats, "needs follow-up", velocity) are pure functions in `lib/` or the owning module's `utils/`, never stored redundantly in IndexedDB.
+- Keep `GradientWaves` and other animated backgrounds isolated from state that changes frequently, to avoid unnecessary re-renders.
+
+## Error Handling & Empty States
+
+- Every IndexedDB write path wrapped in try/catch with a toast/inline error — never fail silently, since there's no server log to fall back on.
+- Empty states for each module (no applications yet, no interviews scheduled, no contacts) with a clear primary CTA.
+- Import validation must reject malformed JSON with a specific error, not a generic failure.
+
+## Performance Considerations
+
+- Resume/cover-letter Blobs can grow the DB — surface storage usage in Settings if it becomes large; don't load all Blobs into memory at once (fetch per-application, on demand).
+- Table/Kanban views should virtualize once application counts grow large (100+), rather than rendering every row/card.
+
+## Deployment
+
+- Static/client-heavy Next.js app — deployable to Vercel or any static host; no environment secrets required since there's no backend.
+- Production at https://jobloom.digitat.in (digitat.in project).
+
+## Implementation Order
+
+1. `modules/storage` — idb init, schema, repositories, migrations.
+2. `modules/applications` — Table + Kanban, create/edit modal, filters.
+3. `modules/dashboard` — summary cards, funnel, velocity.
+4. `modules/interviews` — round tracker, outcomes, badges.
+5. `modules/timeline` — auto-log + manual notes, vertical stepper.
+6. `modules/contacts` + `modules/documents` — referral network, Blob storage.
+7. `modules/reminders` — computed follow-up heuristics, dashboard widget.
+8. `modules/settings` — export/import, wipe, theme, pipeline customization.

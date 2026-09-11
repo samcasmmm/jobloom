@@ -1,12 +1,12 @@
 export interface Application {
-  id: string; // uuid
+  id: string;
   company: string;
   role: string;
   jobLink?: string;
   location?: string;
   salaryMin?: number;
   salaryMax?: number;
-  source: 'LinkedIn' | 'Referral' | 'Naukri' | 'Company Site' | 'Other';
+  source: 'LinkedIn' | 'Referral' | 'Naukri' | 'Wellfound' | 'Company Site' | 'Other';
   status: 'Wishlist' | 'Applied' | 'OA' | 'Interview' | 'Offer' | 'Rejected' | 'Ghosted';
   appliedDate: string; // ISO
   lastUpdated: string; // ISO
@@ -18,9 +18,12 @@ export interface Application {
 export interface InterviewRound {
   id: string;
   applicationId: string; // FK
-  type: 'HR' | 'Tech' | 'Managerial' | 'System Design' | 'Other';
+  type: 'HR' | 'Tech' | 'Managerial' | 'System Design' | 'Culture Fit' | 'Assignment' | 'Other';
   mode: 'Online' | 'Offline' | 'Phone';
   scheduledAt: string; // ISO
+  interviewerName?: string;
+  interviewerRole?: string;
+  meetingLink?: string;
   outcome: 'Pending' | 'Pass' | 'Fail';
   notes?: string;
   createdAt: string;
@@ -41,8 +44,10 @@ export interface Contact {
   id: string;
   name: string;
   role?: string;
+  company?: string;
   linkedinUrl?: string;
   email?: string;
+  phone?: string;
   notes?: string;
   applicationIds: string[]; // many-to-many
   createdAt: string;
@@ -51,14 +56,16 @@ export interface Contact {
 export interface NoteEntry {
   id: string;
   applicationId: string; // FK
-  type: 'auto' | 'manual'; // auto = system-generated log
+  type: 'auto' | 'manual'; // auto = system-generated activity log
   content: string;
   createdAt: string;
 }
 
 export interface Settings {
   id: 'app-settings'; // singleton key
-  theme: 'light' | 'dark';
+  theme: 'light' | 'dark' | 'system';
   statusLabels: Record<Application['status'], string>;
+  statusColors?: Record<Application['status'], string>;
+  followUpThresholdDays: number; // used by "needs follow-up" computed filter
   lastBackupAt?: string;
 }
