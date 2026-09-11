@@ -22,6 +22,11 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html lang='en' className={`${geistSans.className} ${geistMono.variable} h-full antialiased`}>
       <head>
+        <script
+          async
+          src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1947157505829323'
+          crossOrigin='anonymous'
+        />
         <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>
       <body className='min-h-full flex flex-col'>{children}</body>
